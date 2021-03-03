@@ -1,0 +1,13 @@
+# IDE preferences are not tracked
+**/.idea
+**/.vscode
+
+# pytest cache is not tracked
+**/__pycache__
+**.pytest_cache
+
+# data directory can be too large to store in repo, instead data is collected on setup after the cloning process
+data/
+
+# experiments directory is not tracked as it contains a lot of frequentyl changed stuff
+experiments/
