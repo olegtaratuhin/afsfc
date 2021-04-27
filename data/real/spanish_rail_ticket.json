@@ -1,0 +1,9 @@
+{
+    "ordinal": {},
+    "classification": true,
+    "numerical": ["price", "start_time", "end_time", "start_date"],
+    "target": "train_class",
+    "categorical": ["origin", "destination", "train_type", "fare"],
+    "ignore": [],
+    "path": "spanish_rail_ticket.csv"
+}

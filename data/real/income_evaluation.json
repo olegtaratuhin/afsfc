@@ -1,0 +1,8 @@
+{
+    "path": "income_evaluation.csv",
+    "target": " income",
+    "categorical": [" workclass", " education", " marital-status", " occupation", " relationship", " race", " sex", " native-country"],
+    "ignore": ["capital"],
+    "numerical": ["age", " fnlwgt", " education-num", " capital-gain", " capital-loss", " hours-per-week"],
+    "ordinal": {}
+}

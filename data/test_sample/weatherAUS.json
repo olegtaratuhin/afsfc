@@ -1,0 +1,9 @@
+{
+    "path": "weatherAUS.csv",
+    "target": "RainTomorrow",
+    "categorical": ["Location", "WindGustDir", "RainToday"],
+    "ignore": ["Date"],
+    "numerical": ["MinTemp", "MaxTemp", "Rainfall", "Evaporation", "Sunshine", "WindGustSpeed", "WindSpeed9am", "WindSpeed3pm", "Humidity9am", "Humidity3pm", "Pressure9am", "Pressure3pm", "Cloud9am", "Cloud3pm", "Temp9am", "Temp3pm"],
+    "ordinal": {},
+    "classification": true
+}

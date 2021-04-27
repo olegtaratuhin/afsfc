@@ -1,0 +1,13 @@
+{
+    "path": "fertility.csv",
+    "target": "Diagnosis",
+    "categorical": ["Season", "Childish diseases", "Accident or serious trauma", "Surgical intervention"],
+    "ignore": [],
+    "numerical": ["Age", "Number of hours spent sitting per day"],
+    "ordinal": {
+        "High fevers in the last year": ["no", "less than 3 months ago", "more than 3 months ago"], 
+        "Frequency of alcohol consumption": ["hardly ever or never", "once a week", "several times a week", "several times a day"], 
+        "Smoking habit": ["never", "occasional", "daily"]
+    },
+    "classification": true
+}

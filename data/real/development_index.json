@@ -1,0 +1,9 @@
+{
+    "path": "Development_Index.csv",
+    "target": "Development Index",
+    "categorical": [],
+    "ignore": [],
+    "numerical": ["Population", "Area (sq. mi.)", "Pop. Density ", "GDP ($ per capita)", "Literacy (%)", "Infant mortality "],
+    "ordinal": {},
+    "classification": true
+}

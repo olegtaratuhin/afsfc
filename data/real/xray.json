@@ -1,0 +1,9 @@
+{
+    "path": "xray.csv",
+    "target": "Finding Labels",
+    "categorical": ["Patient Gender", "View Position"],
+    "ignore": ["Image Index", "Patient ID", "Patient Age"],
+    "numerical": ["Follow-up #", "Patient Age#", "OriginalImageWidth", "OriginalImageHeight", "OriginalImagePixelSpacing_x", "OriginalImagePixelSpacing_y"],
+    "ordinal": {},
+    "classification": true
+}

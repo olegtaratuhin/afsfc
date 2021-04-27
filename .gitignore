@@ -7,7 +7,9 @@
 **.pytest_cache
 
 # data directory can be too large to store in repo, instead data is collected on setup after the cloning process
-data/
+data/cache/**.csv
 
-# experiments directory is not tracked as it contains a lot of frequentyl changed stuff
+# experiments directory is not tracked as it contains a lot of frequently changed stuff
 experiments/
+pretraining/
+/venv/

@@ -1,0 +1,9 @@
+{
+    "path": "california_housing.csv",
+    "target": "MedHouseVal",
+    "categorical": [],
+    "ignore": [],
+    "numerical": ["MedInc", "HouseAge", "AveRooms", "AveBedrms", "Population", "AveOccup", "Latitude", "Longitude"],
+    "ordinal": {},
+    "classification": false
+}

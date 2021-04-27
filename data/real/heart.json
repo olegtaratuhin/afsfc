@@ -1,0 +1,13 @@
+{
+    "path": "heart.csv",
+    "target": "target",
+    "categorical": ["sex", "cp", "fbs", "restecg", "exang"],
+    "ignore": [],
+    "numerical": ["age", "trestbps", "chol", "thalach", "oldpeak"],
+    "ordinal": {
+        "slope": ["0", "1", "2"],
+        "thal": ["1", "2", "3"],
+        "ca": ["0", "1", "2", "3", "4"]
+    },
+    "classification": true
+}

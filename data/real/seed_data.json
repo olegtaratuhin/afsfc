@@ -1,0 +1,9 @@
+{
+    "path": "Seed_Data.csv",
+    "target": "target",
+    "categorical": ["A", "P", "C", "LK", "WK", "A_Coef", "LKG"],
+    "ignore": [],
+    "numerical": ["Population", "Area (sq. mi.)", "Pop. Density ", "GDP ($ per capita)", "Literacy (%)", "Infant mortality "],
+    "ordinal": {},
+    "classification": true
+}

@@ -1,0 +1,11 @@
+{
+    "path": "loan_data_set.csv",
+    "target": "Loan_Status",
+    "categorical": ["Gender", "Married", "Education", "Self_Employed", "Property_Area"],
+    "ignore": ["Loan_ID"],
+    "numerical": ["ApplicantIncome", "CoapplicantIncome", "LoanAmount", "Loan_Amount_Term", "Credit_History"],
+    "ordinal": {
+        "Dependents": ["0", "1", "2", "3+"]
+    },
+    "classification": true
+}

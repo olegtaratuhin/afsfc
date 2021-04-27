@@ -1,0 +1,11 @@
+{
+    "path": "titanic.csv",
+    "target": "Survived",
+    "categorical": ["Sex", "Embarked"],
+    "ignore": ["PassengerId", "Name", "Ticket", "Cabin"],
+    "numerical": ["Age", "SibSp", "Parch", "Fare"],
+    "ordinal": {
+        "Pclass": ["1", "2", "3"]
+    },
+    "classification": true
+}

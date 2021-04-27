@@ -1,0 +1,9 @@
+{
+    "ordinal": {},
+    "classification": true,
+    "numerical": ["SeniorCitizen", "tenure", "MonthlyCharges", "TotalCharges"],
+    "target": "Churn",
+    "categorical": ["gender", "Partner", "Dependents", "PhoneService", "MultipleLines", "InternetService", "OnlineSecurity", "OnlineBackup", "DeviceProtection", "TechSupport", "StreamingTV", "StreamingMovies", "Contract", "PaperlessBilling", "PaymentMethod"],
+    "ignore": [],
+    "path": "telco_customer_churn.csv"
+}

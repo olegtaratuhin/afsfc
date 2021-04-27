@@ -6,3 +6,8 @@ pandas
 statsmodels
 texttable
 pymfe
+smac
+ConfigSpace
+matplotlib
+scikit-optimize
+emcee

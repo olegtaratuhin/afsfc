@@ -1,0 +1,9 @@
+{
+    "path": "banana.csv",
+    "target": "Class",
+    "categorical": [],
+    "ignore": [],
+    "numerical": ["At1", "At2"],
+    "ordinal": {},
+    "classification": true
+}

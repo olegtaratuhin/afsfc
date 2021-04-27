@@ -1,0 +1,9 @@
+{
+    "path": "Social_Network_Ads.csv",
+    "target": "Purchased",
+    "categorical": ["Gender"],
+    "ignore": ["User ID"],
+    "numerical": ["Age", "EstimatedSalary"],
+    "ordinal": {},
+    "classification": true
+}
