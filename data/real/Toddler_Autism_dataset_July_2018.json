@@ -1,6 +1,6 @@
 {
     "path": "Toddler_Autism_dataset_July_2018.csv",
-    "target": "Class/ASD Traits",
+    "target": "Class/ASD Traits ",
     "categorical": ["A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10", "Sex", "Ethnicity", "Jaundice", "Family_mem_with_ASD", "Who completed the test"],
     "ignore": ["Case_No"],
     "numerical": ["Age_Mons", "Qchat-10-Score"],

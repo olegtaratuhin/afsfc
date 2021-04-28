@@ -10,10 +10,16 @@ class AbstractMetaFeatureExtractor(ABC):
     def extract_from_dataset(self, dataset: Dataset, **kwargs) -> np.array:
         pass
 
+    def extract_from_object(self, dataset: Union[np.ndarray, list], **kwargs):
+        pass
+
 
 class MetafeatureExtractor(AbstractMetaFeatureExtractor):
     def extract_from_dataset(self, dataset: Dataset, **kwargs) -> np.array:
         return extract_from_object(dataset.content.values, kwargs)
+
+    def extract_from_object(self, dataset: Union[np.ndarray, list], **kwargs):
+        return extract_from_object(dataset, kwargs)
 
 
 __default_mfe_params: dict = {
@@ -24,12 +30,12 @@ __default_mfe_params: dict = {
 
 
 def extract_from_object(dataset: Union[np.ndarray, list], mfe_params: dict = None) -> Sequence:
-    if mfe_params is None:
+    if mfe_params is None or len(mfe_params) == 0:
         mfe_params = __default_mfe_params
 
     mfe = MFE(**mfe_params)
-    mfe.fit(dataset)
-    return mfe.extract()[1]
+    mfe.fit(dataset, suppress_warnings=True)
+    return mfe.extract(suppress_warnings=True)[1]
 
 
 def extract_from_file(file: str, mfe_params: dict = None) -> Sequence:

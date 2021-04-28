@@ -2,6 +2,7 @@ from typing import Callable
 import pandas as pd
 from afsfc.datasets import Dataset
 from abc import ABC
+from sklearn.preprocessing import StandardScaler
 
 
 class AbstractFeatureTransformer(ABC):
@@ -62,7 +63,7 @@ class FeatureTransformer(AbstractFeatureTransformer):
             content[feature] = content[feature].astype('category')
             encodings[feature] = dict(enumerate(content[feature].cat.categories))
             integer_encoded_col = content[feature].cat.codes
-            one_hot_encoded_col = pd.get_dummies(integer_encoded_col, prefix=feature)
+            one_hot_encoded_col = pd.get_dummies(integer_encoded_col, prefix=feature, drop_first=True)
             encoded_cols[feature] = one_hot_encoded_col
 
         encoded_dataset = pd.DataFrame(content[dataset.numerical])
@@ -132,6 +133,13 @@ class FeatureTransformer(AbstractFeatureTransformer):
         dataset.content.drop(columns=[target_name], inplace=True)
         return dataset
 
+    @staticmethod
+    def _scale_features(dataset: Dataset) -> Dataset:
+        scaler = StandardScaler()
+        df = dataset.content
+        dataset.content[df.columns] = scaler.fit_transform(df[df.columns])
+        return dataset
+
     def transform(self, dataset: Dataset) -> Dataset:
         """
         Pipes all transformations together and returns dataset after all modifications
@@ -146,7 +154,8 @@ class FeatureTransformer(AbstractFeatureTransformer):
             FeatureTransformer._transform_drop_target,
             FeatureTransformer._transform_categorical,
             FeatureTransformer._transform_ordinal,
-            FeatureTransformer._truncate_dataset
+            FeatureTransformer._truncate_dataset,
+            FeatureTransformer._scale_features
         ]
 
         for transformation in pipeline:

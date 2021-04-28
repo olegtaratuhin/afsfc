@@ -1,4 +1,5 @@
 import os
+import traceback
 from datetime import datetime
 from pathlib import Path
 from typing import Callable, List
@@ -21,14 +22,14 @@ def _create_experiment_directory(base_dir: str) -> str:
     return dir_name
 
 
-def _create_metalerning_directory(base_dir: str) -> str:
+def _create_metadb(base_dir: str) -> str:
     dir_name: str = f"{base_dir}/metadb"
     os.makedirs(dir_name, exist_ok=True)
     return dir_name
 
 
-def _create_metadb_directory(dataset_name: str) -> str:
-    dir_name: str = f"{base_dir}/{dataset_name}"
+def _create_metadb_directory(metadb_dir, dataset_name: str) -> str:
+    dir_name: str = f"{metadb_dir}/{dataset_name}"
     os.makedirs(dir_name, exist_ok=True)
     return dir_name
 
@@ -36,7 +37,11 @@ def _create_metadb_directory(dataset_name: str) -> str:
 def _save_meta_description(dataset_dir: str, metadescription: np.ndarray):
     with open(f"{dataset_dir}/meta.npy", "wb") as f:
         np.save(f, np.array(metadescription))
-    np.savetxt(f"{dataset_dir}/meta.txt", np.array(metadescription))
+
+
+def _save_preprocessed_dataset(dataset_db_dir: str, dataset: np.ndarray):
+    with open(f"{dataset_db_dir}/dataset.npy", "wb") as f:
+        np.save(f, np.array(dataset))
 
 
 class Pretrainer:
@@ -49,7 +54,8 @@ class Pretrainer:
             n_evaluations: int = 30,
             cutoff_time=20,
             optimizer: str = "smac",
-            evaluator: Callable = Measures.silhouette):
+            evaluator: Callable = Measures.silhouette,
+            experiments_dir: str = "../../experiments"):
 
         if clustering_algs is None:
             clustering_algs = ["KMeans", "DBSCAN"]
@@ -61,7 +67,6 @@ class Pretrainer:
         n_evaluations = min(n_evaluations, n_clustering_cfgs * n_feature_selection_cfgs)
         cs = build_config_space(clustering_ls=clustering_algs, feature_selection_ls=feature_selection_algs)
 
-        experiments_dir = "../../experiments"
         base_dir_name = _create_experiment_directory(experiments_dir)
 
         scenario_params: dict = {
@@ -74,6 +79,9 @@ class Pretrainer:
             "abort_on_first_run_crash": False,
         }
         scenario = Scenario(scenario_params)
+
+        def fit_models(cfg, data):
+            pass
 
 
 if __name__ == '__main__':
@@ -89,23 +97,24 @@ if __name__ == '__main__':
     ]
 
     base_dir = "../../experiments"
-    metadb_dir = _create_metalerning_directory(base_dir)
-    experiment_dir = _create_experiment_directory(base_dir)
+    metadb_dir = _create_metadb(base_dir)
+    # experiment_dir = _create_experiment_directory(base_dir)
 
     meta_table = pd.DataFrame()
     for dataset in extract_datasets(config_dir, cache_dir):
         try:
             dataset_name = Path(dataset.path).name
             dataset_name = dataset_name[:dataset_name.find(".")]
-            dataset_db_dir = _create_metadb_directory(dataset_name)
+            dataset_db_dir = _create_metadb_directory(metadb_dir, dataset_name)
 
             dataset: Dataset = feature_transformer.transform(dataset)
             dataset: Dataset = outlier_removal.remove_outliers(dataset)
+            _save_preprocessed_dataset(dataset_db_dir, dataset.content.values)
 
-            X = dataset.content.values
             metadescription = metafeature_extractor.extract_from_dataset(dataset)
             _save_meta_description(dataset_db_dir, metadescription)
-        except:
-            pass
+        except Exception as e:
+            print(traceback.format_exc())
+            break
 
 
