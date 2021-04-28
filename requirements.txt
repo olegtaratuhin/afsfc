@@ -11,3 +11,4 @@ ConfigSpace
 matplotlib
 scikit-optimize
 emcee
+resource

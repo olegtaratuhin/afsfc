@@ -11,5 +11,4 @@ data/cache/**.csv
 
 # experiments directory is not tracked as it contains a lot of frequently changed stuff
 experiments/
-pretraining/
 /venv/
