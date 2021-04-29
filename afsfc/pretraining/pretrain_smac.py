@@ -1,21 +1,14 @@
 import os
-import traceback
-from datetime import datetime
+import pickle
 from pathlib import Path
 from typing import Callable, List
 
 import numpy as np
-import pandas as pd
-from smac.scenario.scenario import Scenario
 from smac.facade.smac_hpo_facade import SMAC4HPO as SMAC
-import resource
+from smac.scenario.scenario import Scenario
 
 from afsfc.algorithms.config_space_composer import Mapper, build_config_space
-from afsfc.datasets import extract_datasets, Dataset
 from afsfc.measure import Measures
-from afsfc.metafeatures import MetafeatureExtractor
-from afsfc.preprocessing import FeatureTransformer
-from afsfc.preprocessing import IsolationForestOutlierRemoval
 from afsfc.utils.string_utils import decode_parameter
 
 
@@ -37,8 +30,8 @@ def extract_datasets(base_path: str):
         return dataset_folders
 
 
-def _create_smac_directory(base_path: str, dataset_name, evaluator_name: str) -> str:
-    dir_name: str = f"{base_path}/{dataset_name}/{evaluator_name}/smac"
+def _create_smac_directory(base_path: str, evaluator_name: str, config_name: str) -> str:
+    dir_name: str = f"{base_path}/{evaluator_name}/smac/{config_name}"
     os.makedirs(dir_name, exist_ok=True)
     return dir_name
 
@@ -49,21 +42,19 @@ class SmacPretrainer:
         self._logger = logger
 
     def fit(self, dataset: BinaryDataset,
-            clustering_algs: List[str] = None,
-            feature_selection_algs: List[str] = None,
+            clustering_algs: List[str],
+            feature_selection_algs: List[str],
             n_evaluations: int = 30,
             cutoff_time=20,
             evaluator: Callable = Measures.silhouette,
             experiments_dir: str = "../../experiments"):
 
-        if clustering_algs is None:
-            clustering_algs = ["KMeans", "DBSCAN"]
-        if feature_selection_algs is None:
-            feature_selection_algs = ["NullModel", "NormalizedCut"]
-
         cs = build_config_space(clustering_ls=clustering_algs, feature_selection_ls=feature_selection_algs)
 
-        base_dir_name = _create_smac_directory(experiments_dir, dataset.name, evaluator.__name__)
+        config_name: str = "mixed"
+        if len(clustering_algs) == 1 and len(feature_selection_algs) == 1:
+            config_name: str = f"{feature_selection_algs[0]}_{clustering_algs[0]}"
+        base_dir_name = _create_smac_directory(experiments_dir, evaluator.__name__, config_name)
 
         scenario_params: dict = {
             "run_obj": "quality",
@@ -71,7 +62,7 @@ class SmacPretrainer:
             "cutoff_time": cutoff_time,
             "cs": cs,
             "deterministic": "true",
-            "output_dir": f"{base_dir_name}",
+            "output_dir": base_dir_name,
             "abort_on_first_run_crash": False,
         }
         scenario = Scenario(scenario_params)
@@ -123,14 +114,28 @@ class SmacPretrainer:
         feature_selection_model, clustering_model, clustering_result = \
             fit_models(cfg_to_dict(optimal_config), dataset_content)
 
+        measure_value = evaluator(dataset_content, clustering_result)
+
         result = {
             "optimal_config": optimal_config,
             "smac": self._smac,
             "feature_selection_model": feature_selection_model,
             "clustering_model": clustering_model,
-            "clustering_result": clustering_result
+            "clustering_result": clustering_result,
+            "measure_value": measure_value
         }
+        _save_clustering_result(result, base_dir_name)
+
         return result
+
+
+def _save_clustering_result(results: dict, base_path: str):
+    with open(f"{base_path}/optimal_config.pkl", "wb") as f:
+        pickle.dump(results["optimal_config"], f, pickle.HIGHEST_PROTOCOL)
+    with open(f"{base_path}/clustering_result.npy", "wb") as f:
+        np.save(f, results["clustering_result"])
+    with open(f"{base_path}/clustering_result.txt", "w") as f:
+        np.savetxt(f, results["measure_value"])
 
 
 if __name__ == '__main__':
@@ -140,26 +145,30 @@ if __name__ == '__main__':
         Measures.davies_bouldin,
         Measures.calinski_harabasz
     ]
+    clustering_algs: List[str] = [
+        "DBSCAN", "KMeans", "MiniBatchKMeans", "AffinityPropagation",
+        "MeanShift", "SpectralClustering", "AgglomerativeClustering",
+        "OPTICS", "Birch", "GaussianMixture"
+    ]
+    feature_selection_algs: List[str] = [
+        "Lasso", "LFSBSS", "MCFS", "WKMeans", "GenericSPEC", "FixedSPEC",
+        "NormalizedCut", "NullModel"
+    ]
 
     for dataset_folder in extract_datasets(meta_db_dir):
         dataset = BinaryDataset(f"{meta_db_dir}/{dataset_folder}")
         pretrainer = SmacPretrainer()
         for measure in measures:
-            results = pretrainer.fit(
-                dataset,
-                clustering_algs=[
-                    "DBSCAN", "KMeans", "MiniBatchKMeans", "AffinityPropagation",
-                    "MeanShift", "SpectralClustering", "AgglomerativeClustering",
-                    "OPTICS", "Birch", "GaussianMixture"
-                ],
-                feature_selection_algs=[
-                    "Lasso", "LFSBSS", "MCFS", "WKMeans", "GenericSPEC", "FixedSPEC",
-                    "NormalizedCut", "NullModel"
-                ],
-                n_evaluations=20,
-                cutoff_time=10,
-                evaluator=measure,
-                experiments_dir=meta_db_dir
-            )
-
-
+            for feature_selection_alg in feature_selection_algs:
+                for clustering_alg in clustering_algs:
+                    try:
+                        pretrainer.fit(
+                            dataset,
+                            clustering_algs=[clustering_alg],
+                            feature_selection_algs=[feature_selection_alg],
+                            n_evaluations=20,
+                            cutoff_time=10,
+                            evaluator=measure,
+                            experiments_dir=f"{meta_db_dir}/{dataset_folder}")
+                    except:
+                        pass
