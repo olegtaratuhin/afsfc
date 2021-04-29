@@ -1,5 +1,6 @@
 import os
 import pickle
+import traceback
 from pathlib import Path
 from typing import Callable, List
 
@@ -61,9 +62,12 @@ class SmacPretrainer:
             "runcount-limit": n_evaluations,
             "cutoff_time": cutoff_time,
             "cs": cs,
-            "deterministic": "true",
+            "deterministic": "false"
+                             "",
             "output_dir": base_dir_name,
             "abort_on_first_run_crash": False,
+            # "shared_model": True,
+            # "input_psmac_dirs": f"{base_dir_name}/pmac*"
         }
         scenario = Scenario(scenario_params)
         dataset_content = dataset.load_dataset()
@@ -86,7 +90,7 @@ class SmacPretrainer:
             }
 
             clustering_model = clustering_alg.model(**cfg_clustering)
-            clustering_result = clustering_model.fit_transform(selected_data)
+            clustering_result = clustering_model.fit_predict(selected_data)
 
             return feature_selection_model, clustering_model, clustering_result
 
@@ -96,9 +100,11 @@ class SmacPretrainer:
 
         def evaluate_model(cfg):
             cfg_dict = cfg_to_dict(cfg)
-            _, _, clustering_result = fit_models(cfg_dict, dataset_content)
-            measure_value = evaluator(dataset_content, clustering_result)
-            return measure_value
+            _, _, y_pred = fit_models(cfg_dict, dataset_content)
+            if len(np.unique(y_pred)) < 2:
+                return np.inf
+            else:
+                return evaluator(dataset_content, y_pred)
 
         optimal_config = None
         smac_params = {
@@ -135,40 +141,36 @@ def _save_clustering_result(results: dict, base_path: str):
     with open(f"{base_path}/clustering_result.npy", "wb") as f:
         np.save(f, results["clustering_result"])
     with open(f"{base_path}/clustering_result.txt", "w") as f:
-        np.savetxt(f, results["measure_value"])
+        np.savetxt(f, np.array([results["measure_value"]]))
 
 
 if __name__ == '__main__':
+
     meta_db_dir = "../../experiments/metadb"
-    measures: [Callable] = [
-        Measures.silhouette,
-        Measures.davies_bouldin,
-        Measures.calinski_harabasz
-    ]
+    measures: [Callable] = [Measures.silhouette]
     clustering_algs: List[str] = [
         "DBSCAN", "KMeans", "MiniBatchKMeans", "AffinityPropagation",
-        "MeanShift", "SpectralClustering", "AgglomerativeClustering",
+        "MeanShift", "SpectralClustering",  # "AgglomerativeClustering",
         "OPTICS", "Birch", "GaussianMixture"
     ]
     feature_selection_algs: List[str] = [
         "Lasso", "LFSBSS", "MCFS", "WKMeans", "GenericSPEC", "FixedSPEC",
         "NormalizedCut", "NullModel"
     ]
+    meta_db = extract_datasets(meta_db_dir)
 
-    for dataset_folder in extract_datasets(meta_db_dir):
+    for dataset_folder in meta_db:
         dataset = BinaryDataset(f"{meta_db_dir}/{dataset_folder}")
-        pretrainer = SmacPretrainer()
+        print(f"Got new dataset: {dataset.name}")
         for measure in measures:
-            for feature_selection_alg in feature_selection_algs:
-                for clustering_alg in clustering_algs:
-                    try:
-                        pretrainer.fit(
-                            dataset,
-                            clustering_algs=[clustering_alg],
-                            feature_selection_algs=[feature_selection_alg],
-                            n_evaluations=20,
-                            cutoff_time=10,
-                            evaluator=measure,
-                            experiments_dir=f"{meta_db_dir}/{dataset_folder}")
-                    except:
-                        pass
+            try:
+                _ = SmacPretrainer().fit(
+                    dataset,
+                    clustering_algs=clustering_algs,
+                    feature_selection_algs=feature_selection_algs,
+                    n_evaluations=100,
+                    cutoff_time=200,
+                    evaluator=measure,
+                    experiments_dir=f"{meta_db_dir}/{dataset_folder}")
+            except:
+                print(traceback.format_exc())

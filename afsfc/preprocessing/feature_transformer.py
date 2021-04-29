@@ -104,7 +104,7 @@ class FeatureTransformer(AbstractFeatureTransformer):
         return dataset
 
     @staticmethod
-    def _truncate_dataset(dataset: Dataset, threshold: int = 1000) -> Dataset:
+    def _truncate_dataset(dataset: Dataset, threshold: int = 10000) -> Dataset:
         """
         Truncate dataset to specified number of rows
         As pretraining may take a long time we may reduce dataset size so that processing takes less time

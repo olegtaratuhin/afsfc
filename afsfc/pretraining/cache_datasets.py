@@ -46,7 +46,7 @@ def _save_preprocessed_dataset(dataset_db_dir: str, dataset: np.ndarray):
 
 if __name__ == '__main__':
     cache_dir: str = "../../data/cache"
-    config_dir: str = "../../data/test_meta_db"
+    config_dir: str = "../../data/real"
 
     outlier_removal = IsolationForestOutlierRemoval()
     feature_transformer = FeatureTransformer()
