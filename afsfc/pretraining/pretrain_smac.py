@@ -23,7 +23,7 @@ class BinaryDataset:
 
     def __init__(self, path: str):
         self.base_path = path
-        self.name = path
+        self.name = Path(path).name
 
     def load_dataset(self):
         return np.load(f"{self.base_path}/dataset.npy")
