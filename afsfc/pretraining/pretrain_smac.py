@@ -26,10 +26,10 @@ class BinaryDataset:
         self.name = path
 
     def load_dataset(self):
-        return np.fromfile(f"{self.base_path}/dataset.npy")
+        return np.load(f"{self.base_path}/dataset.npy")
 
     def load_metafeatures(self):
-        return np.fromfile(f"{self.base_path}/meta.npy")
+        return np.load(f"{self.base_path}/meta.npy")
 
 
 def extract_datasets(base_path: str):
