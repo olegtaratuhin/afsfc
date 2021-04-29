@@ -1,3 +1,4 @@
+import itertools
 from typing import Callable
 import pandas as pd
 from afsfc.datasets import Dataset
@@ -9,6 +10,7 @@ class AbstractFeatureTransformer(ABC):
     """
     Abstract feature transformer interface class
     """
+
     def transform(self, dataset: Dataset) -> Dataset:
         """
         Performs some transformation on the dataset and returns modified dataset
@@ -66,7 +68,8 @@ class FeatureTransformer(AbstractFeatureTransformer):
             one_hot_encoded_col = pd.get_dummies(integer_encoded_col, prefix=feature, drop_first=True)
             encoded_cols[feature] = one_hot_encoded_col
 
-        encoded_dataset = pd.DataFrame(content[dataset.numerical])
+        ordinal_and_numerical = itertools.chain(dataset.numerical, dataset.ordinal)
+        encoded_dataset = pd.DataFrame(content[ordinal_and_numerical])
         for col in encoded_cols:
             encoded_dataset[encoded_cols[col].columns] = encoded_cols[col]
         dataset.content = encoded_dataset
@@ -130,7 +133,8 @@ class FeatureTransformer(AbstractFeatureTransformer):
             Dataset after transformation
         """
         target_name = dataset.target
-        dataset.content.drop(columns=[target_name], inplace=True)
+        if target_name is not None:
+            dataset.content.drop(columns=[target_name], inplace=True)
         return dataset
 
     @staticmethod

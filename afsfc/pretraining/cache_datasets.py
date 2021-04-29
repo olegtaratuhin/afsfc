@@ -44,46 +44,6 @@ def _save_preprocessed_dataset(dataset_db_dir: str, dataset: np.ndarray):
         np.save(f, np.array(dataset))
 
 
-class Pretrainer:
-    def __init__(self, logger=None):
-        self._logger = logger
-
-    def fit(self, dataset: Dataset,
-            clustering_algs: List[str] = None,
-            feature_selection_algs: List[str] = None,
-            n_evaluations: int = 30,
-            cutoff_time=20,
-            optimizer: str = "smac",
-            evaluator: Callable = Measures.silhouette,
-            experiments_dir: str = "../../experiments"):
-
-        if clustering_algs is None:
-            clustering_algs = ["KMeans", "DBSCAN"]
-        if feature_selection_algs is None:
-            feature_selection_algs = ["NullModel", "NormalizedCut"]
-
-        n_clustering_cfgs = max([Mapper.get_class(alg).n_possible_cfgs for alg in clustering_algs])
-        n_feature_selection_cfgs = max([Mapper.get_class(alg).n_possible_cfgs for alg in feature_selection_algs])
-        n_evaluations = min(n_evaluations, n_clustering_cfgs * n_feature_selection_cfgs)
-        cs = build_config_space(clustering_ls=clustering_algs, feature_selection_ls=feature_selection_algs)
-
-        base_dir_name = _create_experiment_directory(experiments_dir)
-
-        scenario_params: dict = {
-            "run_obj": "quality",
-            "runcount-limit": n_evaluations,
-            "cutoff_time": cutoff_time,
-            "cs": cs,
-            "deterministic": "true",
-            "output_dir": f"{base_dir_name}/smac",
-            "abort_on_first_run_crash": False,
-        }
-        scenario = Scenario(scenario_params)
-
-        def fit_models(cfg, data):
-            pass
-
-
 if __name__ == '__main__':
     cache_dir: str = "../../data/cache"
     config_dir: str = "../../data/real"
@@ -91,16 +51,10 @@ if __name__ == '__main__':
     outlier_removal = IsolationForestOutlierRemoval()
     feature_transformer = FeatureTransformer()
     metafeature_extractor = MetafeatureExtractor()
-    measures: [Callable] = [
-        Measures.silhouette,
-        Measures.davies_bouldin
-    ]
 
     base_dir = "../../experiments"
     metadb_dir = _create_metadb(base_dir)
-    # experiment_dir = _create_experiment_directory(base_dir)
 
-    meta_table = pd.DataFrame()
     for dataset in extract_datasets(config_dir, cache_dir):
         try:
             dataset_name = Path(dataset.path).name
