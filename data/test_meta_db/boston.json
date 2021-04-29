@@ -1,0 +1,1 @@
+{"path": "boston.csv", "target": "target", "categorical": [], "ignore": [], "numerical": ["CRIM", "ZN", "INDUS", "CHAS", "NOX", "RM", "AGE", "DIS", "RAD", "TAX", "PTRATIO", "B", "LSTAT"], "ordinal": {}, "classification": false}

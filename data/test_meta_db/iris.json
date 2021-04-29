@@ -1,0 +1,9 @@
+{
+    "target": "class",
+    "categorical": [],
+    "path": "iris.csv",
+    "classification": true,
+    "ignore": [],
+    "ordinal": {},
+    "numerical": ["sepal length", "sepal width", "petal length", "petal width"]
+}

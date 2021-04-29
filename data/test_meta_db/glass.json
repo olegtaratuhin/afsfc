@@ -1,0 +1,9 @@
+{
+    "path": "glass.csv",
+    "target": "Type",
+    "categorical": [],
+    "ignore": [],
+    "numerical": ["RI", "Na", "Mg", "Al", "Si", "K", "Ca", "Ba", "Fe"],
+    "ordinal": {},
+    "classification": true
+}

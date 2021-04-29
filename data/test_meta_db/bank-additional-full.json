@@ -1,0 +1,9 @@
+{
+    "path": "bank-additional-full.csv",
+    "target": "y",
+    "categorical": ["job", "marital", "education", "default", "housing", "loan", "contact", "month", "day_of_week", "poutcome"],
+    "ignore": [],
+    "numerical": ["age", "duration", "pdays", "previous", "campaign", "emp.var.rate", "cons.price.idx", "cons.conf.idx", "euribor3m", "nr.employed"],
+    "ordinal": {},
+    "classification": true
+}
