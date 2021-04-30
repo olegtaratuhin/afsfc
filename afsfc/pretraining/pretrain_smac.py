@@ -5,7 +5,10 @@ from pathlib import Path
 from typing import Callable, List
 
 import numpy as np
-from smac.facade.smac_hpo_facade import SMAC4HPO as SMAC
+# from smac.facade.smac_hpo_facade import SMAC4HPO as SMAC
+# from smac.facade.smac_bohb_facade import SMAC4HPO as SMAC
+# from smac.facade.smac_ac_facade import SMAC4AC as SMAC
+from smac.facade.experimental.psmac_facade import PSMAC as SMAC
 from smac.scenario.scenario import Scenario
 
 from afsfc.algorithms.config_space_composer import Mapper, build_config_space
@@ -37,6 +40,15 @@ def _create_smac_directory(base_path: str, evaluator_name: str, config_name: str
     return dir_name
 
 
+def _create_psmac_dirs(base_path: str, count: int) -> List[str]:
+    created_dirs: List[str] = []
+    for i in range(count):
+        dir_name: str = f"{base_path}/psmac_{i}"
+        os.makedirs(dir_name, exist_ok=True)
+        created_dirs.append(dir_name)
+    return created_dirs
+
+
 class SmacPretrainer:
     def __init__(self, logger=None):
         self._smac = None
@@ -48,7 +60,8 @@ class SmacPretrainer:
             n_evaluations: int = 30,
             cutoff_time=20,
             evaluator: Callable = Measures.silhouette,
-            experiments_dir: str = "../../experiments"):
+            experiments_dir: str = "../../experiments",
+            n_optimizers=2):
 
         cs = build_config_space(clustering_ls=clustering_algs, feature_selection_ls=feature_selection_algs)
 
@@ -62,13 +75,13 @@ class SmacPretrainer:
             "runcount-limit": n_evaluations,
             "cutoff_time": cutoff_time,
             "cs": cs,
-            "deterministic": "false"
-                             "",
+            "deterministic": "false",
             "output_dir": base_dir_name,
             "abort_on_first_run_crash": False,
-            # "shared_model": True,
-            # "input_psmac_dirs": f"{base_dir_name}/pmac*"
+            "shared_model": True,
+            "input_psmac_dirs": _create_psmac_dirs(base_dir_name, n_optimizers)
         }
+
         scenario = Scenario(scenario_params)
         dataset_content = dataset.load_dataset()
 
@@ -107,20 +120,22 @@ class SmacPretrainer:
                 return evaluator(dataset_content, y_pred)
 
         optimal_config = None
-        smac_params = {
-            "scenario": scenario,
-            "rng": np.random.RandomState(42),
-            "tae_runner": evaluate_model,
-            # "initial_configurations": None
-        }
-        smac = SMAC(**smac_params)
+        smac = SMAC(
+            scenario=scenario,
+            rng=np.random.RandomState(42),
+            tae=evaluate_model,
+            n_optimizers=n_optimizers
+        )
         self._smac = smac
         optimal_config = self._smac.optimize()
 
         feature_selection_model, clustering_model, clustering_result = \
             fit_models(cfg_to_dict(optimal_config), dataset_content)
 
-        measure_value = evaluator(dataset_content, clustering_result)
+        if len(np.unique(clustering_result)) < 2:
+            measure_value = np.inf
+        else:
+            measure_value = evaluator(dataset_content, clustering_result)
 
         result = {
             "optimal_config": optimal_config,
@@ -154,14 +169,18 @@ if __name__ == '__main__':
         "OPTICS", "Birch", "GaussianMixture"
     ]
     feature_selection_algs: List[str] = [
-        "Lasso", "LFSBSS", "MCFS", "WKMeans", "GenericSPEC", "FixedSPEC",
+        "Lasso", "MCFS", "WKMeans", "GenericSPEC", "FixedSPEC",
         "NormalizedCut", "NullModel"
     ]
     meta_db = extract_datasets(meta_db_dir)
+    finished_previously = ["banana", "bank-additional-full", "boston"]
 
     for dataset_folder in meta_db:
         dataset = BinaryDataset(f"{meta_db_dir}/{dataset_folder}")
         print(f"Got new dataset: {dataset.name}")
+        if dataset.name in finished_previously:
+            print(f"Skip {dataset.name}")
+            continue
         for measure in measures:
             try:
                 _ = SmacPretrainer().fit(
@@ -169,8 +188,11 @@ if __name__ == '__main__':
                     clustering_algs=clustering_algs,
                     feature_selection_algs=feature_selection_algs,
                     n_evaluations=100,
-                    cutoff_time=200,
+                    cutoff_time=20,
                     evaluator=measure,
-                    experiments_dir=f"{meta_db_dir}/{dataset_folder}")
+                    experiments_dir=f"{meta_db_dir}/{dataset_folder}",
+                    n_optimizers=5
+                )
             except:
                 print(traceback.format_exc())
+        break
