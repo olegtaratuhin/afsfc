@@ -3,6 +3,8 @@ import traceback
 from datetime import datetime
 from pathlib import Path
 from typing import Callable, List
+from joblib import Parallel, delayed
+import multiprocessing
 
 import numpy as np
 import pandas as pd
@@ -56,7 +58,7 @@ if __name__ == '__main__':
     base_dir = "../../experiments"
     metadb_dir = _create_metadb(base_dir, metadb_name)
 
-    for dataset in extract_datasets(config_dir, cache_dir):
+    def preproccess_dataset(dataset: Dataset):
         try:
             dataset_name = Path(dataset.path).name
             dataset_name = dataset_name[:dataset_name.find(".")]
@@ -70,6 +72,6 @@ if __name__ == '__main__':
             _save_meta_description(dataset_db_dir, metadescription)
         except Exception as e:
             print(traceback.format_exc())
-            break
 
-
+    n_cpus = multiprocessing.cpu_count()
+    Parallel(prefer="processes", n_jobs=n_cpus)(delayed(preproccess_dataset)(dataset) for dataset in extract_datasets(config_dir, cache_dir))
