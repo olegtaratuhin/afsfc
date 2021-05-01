@@ -22,8 +22,8 @@ def _create_experiment_directory(base_dir: str) -> str:
     return dir_name
 
 
-def _create_metadb(base_dir: str) -> str:
-    dir_name: str = f"{base_dir}/metadb"
+def _create_metadb(base_dir: str, meta_db_name: str) -> str:
+    dir_name: str = f"{base_dir}/{meta_db_name}"
     os.makedirs(dir_name, exist_ok=True)
     return dir_name
 
@@ -46,14 +46,15 @@ def _save_preprocessed_dataset(dataset_db_dir: str, dataset: np.ndarray):
 
 if __name__ == '__main__':
     cache_dir: str = "../../data/cache"
-    config_dir: str = "../../data/real"
+    config_dir: str = "../../data/synthetic"
+    metadb_name: str = "metadb_synthetic"
 
     outlier_removal = IsolationForestOutlierRemoval()
     feature_transformer = FeatureTransformer()
     metafeature_extractor = MetafeatureExtractor()
 
     base_dir = "../../experiments"
-    metadb_dir = _create_metadb(base_dir)
+    metadb_dir = _create_metadb(base_dir, metadb_name)
 
     for dataset in extract_datasets(config_dir, cache_dir):
         try:

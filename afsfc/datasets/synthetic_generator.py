@@ -9,7 +9,7 @@ def create_dataset_from_df(df: pd.DataFrame) -> Dataset:
     dataset: Dataset = Dataset(
         categorical=[],
         ignore=[],
-        numerical=list(df.columns),
+        numerical=list(map(str, df.columns)),
         ordinal={},
         classification=None,
         target=None,
@@ -27,7 +27,7 @@ def generate_blobs(n_samples: int = 10000, n_features: int = 100,
         n_features=n_features,
         centers=n_clusters,
         random_state=random_state
-    ))
+    )[0])
     return create_dataset_from_df(df)
 
 
@@ -36,12 +36,13 @@ def generate_classification(n_samples: int = 10000, n_informative: int = 20,
                             n_clusters: int = 5, n_repeated: int = 20) -> Dataset:
     df: pd.DataFrame = pd.DataFrame(datasets.make_classification(
         n_samples=n_samples,
+        n_features=n_repeated + n_redundant + n_informative,
         n_informative=n_informative,
         n_redundant=n_redundant,
         n_classes=n_clusters,
         n_repeated=n_repeated,
         random_state=random_state
-    ))
+    )[0])
     return create_dataset_from_df(df)
 
 
@@ -51,7 +52,7 @@ def generate_moons(n_samples: Union[int, Tuple[int]] = 10000, random_state: int 
         n_samples=n_samples,
         noise=noise,
         random_state=random_state
-    ))
+    )[0])
     return create_dataset_from_df(df)
 
 
@@ -61,5 +62,5 @@ def generate_circles(n_samples: Union[int, Tuple[int]] = 10000, random_state: in
         n_samples=n_samples,
         noise=noise,
         random_state=random_state
-    ))
+    )[0])
     return create_dataset_from_df(df)
